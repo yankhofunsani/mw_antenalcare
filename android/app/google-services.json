@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1047947981004",
+    "project_id": "mw-antenatalcare",
+    "storage_bucket": "mw-antenatalcare.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1047947981004:android:f2d36a479c907d9d989269",
+        "android_client_info": {
+          "package_name": "com.example.mw_antenatalcare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQYck-0bY6cwgvG2Bz0AedQkp57v9CrjU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
