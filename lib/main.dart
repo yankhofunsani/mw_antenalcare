@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/registrationpage.dart';
 
 void main() {
   runApp(
@@ -7,8 +8,14 @@ void main() {
       theme: ThemeData(  
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage()
-      ,)
+      home: const HomePage(),
+      initialRoute: '/home',
+      routes: {
+      '/register': (context) => RegistrationPage(),
+      '/home': (context) => HomePage(),
+  },
+  debugShowCheckedModeBanner: false,
+  )
   );
 }
 // LANDING PAGE CODE
@@ -56,7 +63,10 @@ Widget build(BuildContext context) {
     ),
     TextButton(
       onPressed: () {
-        // register logic
+        Navigator.pushNamed(
+      context, '/register'
+     // MaterialPageRoute(builder: (context) => RegisterPage()),
+    );
       },
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
@@ -93,3 +103,4 @@ Widget build(BuildContext context) {
   );
 }
 }
+ 
