@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -9,21 +11,53 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   String? sex;
   final List<String> sexOptions = ['Male', 'Female'];
-
   final firstnameController = TextEditingController();
   final surnameController = TextEditingController();
   final ageController = TextEditingController();
   final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   final usernameController = TextEditingController();
   final villageController = TextEditingController();
   final phoneController = TextEditingController();
+  
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Registration Successful')));
+  void _submitForm() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      // Register the user with email and password
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+      String uid = userCredential.user!.uid;
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'firstname': firstnameController.text.trim(),
+        'surname': surnameController.text.trim(),
+        'age': ageController.text.trim(),
+        'sex': sex,
+        'email': emailController.text.trim(),
+        'username': usernameController.text.trim(),
+        'village': villageController.text.trim(),
+        'phone': phoneController.text.trim(),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration Successful')),
+      );
+      Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.message}')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
+}
+
 
   Widget buildTextField(String label, TextEditingController controller,
       {TextInputType keyboardType = TextInputType.text}) {
@@ -77,7 +111,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
               SizedBox(height: 8),
               buildTextField("Email", emailController,
                   keyboardType: TextInputType.emailAddress),
-              buildTextField("Username", usernameController),
+              TextFormField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: "Password",
+                ),
+                validator: (value) =>
+                    value == null || value.length < 6
+                        ? 'Password must be at least 6 characters'
+                        : null,
+),SizedBox(height: 8),
+             buildTextField("Username", usernameController),
               buildTextField("Home Village", villageController),
               buildTextField("Phone Number", phoneController,
                   keyboardType: TextInputType.phone),
