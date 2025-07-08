@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '/registrationpage.dart';
-import '/homepage.dart';
+import '/login.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'homepage.dart';
 
 void main() async {
    WidgetsFlutterBinding.ensureInitialized();      
@@ -12,11 +13,12 @@ void main() async {
       theme: ThemeData(  
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
-      initialRoute: '/home',
+      home: const LoginPage(),
+      initialRoute: '/login',
       routes: {
       '/register': (context) => RegistrationPage(),
-      '/home': (context) => HomePage(),
+      '/login': (context) => LoginPage(),
+      '/home':(context)=>HomePage()
   },
   debugShowCheckedModeBanner: false,
   )
