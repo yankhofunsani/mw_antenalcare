@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegistrationPage extends StatefulWidget {
+  const RegistrationPage({super.key});
+
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
 }
@@ -130,9 +132,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitForm,
-                child: Text("Register"),
                 style:ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyan                )
+                  backgroundColor: Colors.cyan                ),
+                child: Text("Register")
               ),
               TextButton(
                 onPressed: () {

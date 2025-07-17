@@ -3,6 +3,7 @@ import '/registrationpage.dart';
 import '/login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'homepage.dart';
+import 'session.dart';
 
 void main() async {
    WidgetsFlutterBinding.ensureInitialized();      
@@ -18,7 +19,8 @@ void main() async {
       routes: {
       '/register': (context) => RegistrationPage(),
       '/login': (context) => LoginPage(),
-      '/home':(context)=>HomePage()
+      '/home':(context)=>HomePage(),
+      '/session':(context)=>SessionsPage(),
   },
   debugShowCheckedModeBanner: false,
   )

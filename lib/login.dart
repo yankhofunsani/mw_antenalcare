@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'homepage.dart';
+import 'package:mw_antenatalcare/mainpage.dart';
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
       
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomePage()),
+        MaterialPageRoute(builder: (_) => MainPage()),
       );
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -73,11 +73,11 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final List<Widget> formItems = [
       TextField(
-        controller: identifierController,
+        controller: identifierController,   
         decoration: InputDecoration(
           labelText: 'Username or Email',
           border: OutlineInputBorder(),
-          prefixIcon: Icon(Icons.person, color: Colors.blue),
+          prefixIcon: Icon(Icons.person, color: Colors.purpleAccent),
           labelStyle: TextStyle(
             fontSize: 16,
             color: Colors.black,
@@ -91,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
         decoration: InputDecoration(
           labelText: "Password",
           border: OutlineInputBorder(),
-          prefixIcon: Icon(Icons.lock, color: Colors.blue),
+          prefixIcon: Icon(Icons.lock, color: Colors.purpleAccent),
           labelStyle: TextStyle(
             fontSize: 16,
             color: Colors.black,
@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
         onPressed: isLoading ? null : loginUser,
         style: TextButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 12),
-          backgroundColor: Colors.blueAccent,
+          backgroundColor: Colors.purpleAccent,
         ),
         child: isLoading
             ? CircularProgressIndicator(color: Colors.white)
@@ -130,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
         },
         style: TextButton.styleFrom(
           padding: EdgeInsets.zero,
-          foregroundColor: Colors.blueAccent,
+          foregroundColor: Colors.purpleAccent,
           minimumSize: Size(0, 0),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
@@ -150,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Malawi Antenatal Care App'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.purpleAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

@@ -10,8 +10,8 @@ class HomePage extends StatelessWidget {
   String? userEmail = FirebaseAuth.instance.currentUser?.email;
     return Scaffold(
       appBar: AppBar(
-        title: Text('welcome, $userEmail'),
-        backgroundColor: Colors.blue,
+        title: Text('Welcome' ,style: TextStyle(color:Colors.white)),
+        backgroundColor: Colors.pinkAccent,
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
@@ -26,18 +26,6 @@ class HomePage extends StatelessWidget {
         ],
       ),
       backgroundColor: Colors.white,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Sessions"),
-          BottomNavigationBarItem(icon: Icon(Icons.track_changes), label: "Tracker"),
-          BottomNavigationBarItem(icon: Icon(Icons.analytics), label: "Analytics"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
-      ),
       body: SafeArea(
         child: ListView(
           padding: EdgeInsets.all(16),
