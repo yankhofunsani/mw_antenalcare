@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mw_antenatalcare/session.dart';
 import 'homepage.dart';
-
+import 'tracker.dart';
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -15,7 +15,7 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _pages = [
     HomePage(),
     SessionsPage(),
-    Center(child: Text('Tracker Page')),
+    Tracker(),
     Center(child: Text('Analytics Page')),
     Center(child: Text('Profile Page')),
   ];

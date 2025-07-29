@@ -13,7 +13,7 @@ class HomePage extends StatelessWidget {
         title: Text('Welcome' ,style: TextStyle(color:Colors.white)),
         backgroundColor: Colors.pinkAccent,
         actions: [
-          IconButton(
+          IconButton(               
             icon: Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
