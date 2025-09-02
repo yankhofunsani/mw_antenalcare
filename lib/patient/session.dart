@@ -16,7 +16,7 @@ class _SessionsPageState extends State<SessionsPage> {
 
   void _bookAppointment() {
     setState(() {
-      sessions.add("New Appointment - ${DateTime.now().toLocal()}");
+      sessions.add("New Appointment  assigned to DR Phiri- ${DateTime.now().toLocal()}");
     });
   }
 

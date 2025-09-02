@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import '/registrationpage.dart';
-import '/login.dart';
+import 'healthproffessional/registrationpage.dart';
+import 'auth/login.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'homepage.dart';
-import 'session.dart';
-import 'tracker.dart';
+import 'patient/homepage.dart';
+import 'patient/session.dart';
+import 'patient/tracker.dart';
+import 'healthproffessional/admindashboard.dart';
+
 
 void main() async {
    WidgetsFlutterBinding.ensureInitialized();      
@@ -23,8 +25,10 @@ void main() async {
       '/home':(context)=>HomePage(),
       '/session':(context)=>SessionsPage(),
       '/tracker':(context)=>Tracker(),
-  },
+      '/admindashboard':(context)=>DashboardScreen(),  },
   debugShowCheckedModeBanner: false,
   )
   );
 }
+
+
