@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mw_antenatalcare/healthproffessional/anc_register.dart';
 import 'firebase_options.dart'; 
 import 'auth/login.dart'; 
 import 'healthproffessional/registrationpage.dart';
@@ -37,7 +38,9 @@ class AdminApp extends StatelessWidget {
       '/home':(context)=>HomePage(),
       '/session':(context)=>SessionsPage(),
       '/tracker':(context)=>Tracker(),
-      '/admindashboard':(context)=>DashboardScreen(),  },
+      '/admindashboard':(context)=>DashboardScreen(), 
+      '/anc_register':(context)=>ANCRegisterPage(), 
+      },
     );
   }
 }

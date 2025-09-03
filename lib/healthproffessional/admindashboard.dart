@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/auth/login.dart';
-import '/healthproffessional/registrationpage.dart'; // <-- make sure this path is correct
+import '/healthproffessional/registrationpage.dart'; 
+import '/healthproffessional/anc_register.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -20,7 +21,7 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 const DrawerHeader(
                   child: Text(
-                    "MomCare Admin",
+                    "QTECH ANTENAL CARE ADMIN",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -49,10 +50,7 @@ class DashboardScreen extends StatelessWidget {
                   context,
                   Icons.pregnant_woman,
                   "ANC Registration",
-                  Scaffold(
-                    appBar: AppBar(title: const Text("ANC Registration")),
-                    body: const Center(child: Text("ANC Registration Page")),
-                  ),
+                    ANCRegisterPage(),
                 ),
                 _buildSidebarItem(
                   context,
@@ -63,6 +61,18 @@ class DashboardScreen extends StatelessWidget {
                     body: const Center(child: Text("Patient Records Page")),
                   ),
                 ),
+                 _buildSidebarItem(
+                  context,
+                  Icons.pregnant_woman,
+                  "ANC Session details",
+                  Scaffold(
+                    appBar: AppBar(title: const Text("Patient session details")),
+                    body: const Center(child: Text("Patient anc session page")),
+                  ),
+                ),
+
+
+
                 const Spacer(),
                 ListTile(
                   leading: const Icon(Icons.logout),
@@ -286,7 +296,6 @@ class _TasksCard extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Divider(),
-            // NOTE: calls use _taskItem (capital I)
             _taskItem("Complete ANC registration for Emma Thompson", "2 hours ago", "High"),
             _taskItem("Update patient records for Maria Garcia", "4 hours ago", "Medium"),
           ],
@@ -295,7 +304,6 @@ class _TasksCard extends StatelessWidget {
     );
   }
 
-  // static helper inside the class (same exact name used above)
   static Widget _taskItem(String title, String time, String priority) {
     Color color;
     switch (priority.toLowerCase()) {
