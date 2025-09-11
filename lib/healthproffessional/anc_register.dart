@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ANCRegisterPage extends StatefulWidget {
+  const ANCRegisterPage({super.key});
+
   @override
   _ANCRegisterPageState createState() => _ANCRegisterPageState();
 }
@@ -10,21 +12,25 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
   // Text controllers
-  final _registrationNumberController = TextEditingController();
+  final _deliveryController = TextEditingController();
+  final _abortionController = TextEditingController();
+  final _hemorrhageController = TextEditingController();
+  final _ageRiskController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _syphilisController = TextEditingController();
+  final _hb1Controller = TextEditingController();
+  final _hb2Controller = TextEditingController();
+  final _cd4Controller = TextEditingController();
+  final _hepBController = TextEditingController();
+
   DateTime? _lmpDate;
   DateTime? _eddDate;
-  
+
   // Dropdown Y/N selections
   String? _cSection;
   String? _vacuumExtraction;
   String? _symphyisiotomy;
   String? _preEclampsia;
-  String? _delivery;
-  String? _abortion;
-  String? _haemorrhage;
-  String? _ageRisk;
-  String? _heightRisk;
-
 
   String? _asthma;
   String? _hypertension;
@@ -33,18 +39,60 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
   String? _renalDisease;
   String? _fistulaRepair;
   String? _legSpineDeform;
-  
   String? _multiplePregnancy;
-  String? _syphilis;
-  String? _hb1;
-  String? _hb2;
-  String? _cd4;
-  String? _hepB;
 
-  // Dropdown items
   final List<String> yesNoOptions = ['Y', 'N'];
 
-  Future<void> _pickDate(BuildContext context, bool isLmp) async {
+  // Registration dropdown
+  String? _selectedRegNumber;
+  String? _patientName;
+  List<String> _availableRegNumbers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRegistrationNumbers();
+  }
+
+  Future<void> _fetchRegistrationNumbers() async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('patients').get();
+      final numbers = snapshot.docs
+          .map((doc) => doc['registration_number'].toString())
+          .toList();
+      setState(() {
+        _availableRegNumbers = numbers;
+      });
+    } catch (e) {
+      debugPrint("Error fetching registration numbers: $e");
+    }
+  }
+
+  Future<void> _fetchPatientName(String regNumber) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('patients')
+          .where('registration_number', isEqualTo: regNumber)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final data = snapshot.docs.first.data();
+        setState(() {
+          _patientName = "${data['firstname']} ${data['surname']}";
+        });
+      } else {
+        setState(() {
+          _patientName = "Not found";
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching patient name: $e");
+    }
+  }
+
+  Future<void> _pickDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -53,30 +101,28 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
     );
     if (picked != null) {
       setState(() {
-        if (isLmp) {
-          _lmpDate = picked;
-        } else {
-          _eddDate = picked;
-        }
+        _lmpDate = picked;
+        _eddDate = DateTime(picked.year, picked.month + 9, picked.day);
       });
     }
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && _selectedRegNumber != null) {
       try {
         await FirebaseFirestore.instance.collection('anc_registers').add({
           "facility_name": "QUEEN ELIZABETH CENTRAL HOSPITAL",
-          "registration_number": _registrationNumberController.text,
+          "registration_number": _selectedRegNumber,
+          "patient_name": _patientName,
           "lmp": _lmpDate?.toIso8601String(),
           "edd": _eddDate?.toIso8601String(),
           "obstetric_history": {
-            "delivery": _delivery,
-            "abortion": _abortion,
+            "delivery": _deliveryController.text,
+            "abortion": _abortionController.text,
             "c_section": _cSection,
             "vacuum_extraction": _vacuumExtraction,
             "symphyisiotomy": _symphyisiotomy,
-            "haemorrhage": _haemorrhage,
+            "haemorrhage": _hemorrhageController.text,
             "pre_eclampsia": _preEclampsia,
           },
           "medical_history": {
@@ -87,16 +133,16 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
             "renal_disease": _renalDisease,
             "fistula_repair": _fistulaRepair,
             "leg_spine_deform": _legSpineDeform,
-            "age_risk": _ageRisk,
+            "age_risk": _ageRiskController.text,
           },
           "examination": {
-            "height_risk": _heightRisk,
+            "height": _heightController.text,
             "multiple_pregnancy": _multiplePregnancy,
-            "syphilis": _syphilis,
-            "hb1": _hb1,
-            "hb2": _hb2,
-            "cd4": _cd4,
-            "hep_b": _hepB,
+            "syphilis": _syphilisController.text,
+            "hb1": _hb1Controller.text,
+            "hb2": _hb2Controller.text,
+            "cd4": _cd4Controller.text,
+            "hep_b": _hepBController.text,
           },
           "createdAt": FieldValue.serverTimestamp(),
         });
@@ -112,15 +158,30 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
     }
   }
 
-  Widget _buildDropdown(String label, String? value, Function(String?) onChanged) {
-    return DropdownButtonFormField<String>(
-      decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
-      value: value,
-      items: yesNoOptions.map((opt) {
-        return DropdownMenuItem(value: opt, child: Text(opt));
-      }).toList(),
-      onChanged: onChanged,
-      validator: (val) => val == null ? "Required" : null,
+  Widget _buildDropdown(
+      String label, String? value, Function(String?) onChanged) {
+    return SizedBox(
+      width: 250,
+      child: DropdownButtonFormField<String>(
+        decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
+        value: value,
+        items: yesNoOptions
+            .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
+            .toList(),
+        onChanged: onChanged,
+        validator: (val) => val == null ? "Required" : null,
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return SizedBox(
+      width: 250,
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
+        validator: (val) => val!.isEmpty ? "Required" : null,
+      ),
     );
   }
 
@@ -132,19 +193,20 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
           // Sidebar
           Container(
             width: 220,
-            color: Colors.blue,
+            color: Colors.grey.shade100,
             child: Column(
               children: [
                 SizedBox(height: 50),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.local_hospital, color: Colors.white, size: 40),
+                    Icon(Icons.local_hospital, color: Colors.blue, size: 40),
                     SizedBox(width: 10),
                     Flexible(
                       child: Text(
                         "QUEEN ELIZABETH HOSPITAL",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -152,15 +214,15 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
                 ),
                 SizedBox(height: 50),
                 ListTile(
-                  leading: Icon(Icons.dashboard, color: Colors.white),
-                  title: Text("Dashboard", style: TextStyle(color: Colors.white)),
+                  leading: Icon(Icons.dashboard, color: Colors.black),
+                  title: Text("Dashboard", style: TextStyle(color: Colors.black)),
                   onTap: () {
                     Navigator.pushReplacementNamed(context, "/admindashboard");
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.assignment, color: Colors.white),
-                  title: Text("ANC Register", style: TextStyle(color: Colors.white)),
+                  leading: Icon(Icons.assignment, color: Colors.black),
+                  title: Text("ANC Register", style: TextStyle(color: Colors.black)),
                   onTap: () {},
                 ),
               ],
@@ -172,19 +234,45 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
               padding: EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
                   children: [
-                    Text("Facility: QUEEN ELIZABETH CENTRAL HOSPITAL",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: _registrationNumberController,
-                      decoration: InputDecoration(
-                          labelText: "Registration Number", border: OutlineInputBorder()),
-                      validator: (val) => val!.isEmpty ? "Required" : null,
+                    Text("ANC REGISTER DETAILS FORM",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    SizedBox(
+                      width: 250,
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: "Registration Number",
+                          border: OutlineInputBorder(),
+                        ),
+                        value: _selectedRegNumber,
+                        items: _availableRegNumbers
+                            .map((num) => DropdownMenuItem(
+                                  value: num,
+                                  child: Text(num),
+                                ))
+                            .toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedRegNumber = val;
+                            _patientName = null;
+                          });
+                          if (val != null) {
+                            _fetchPatientName(val);
+                          }
+                        },
+                        validator: (val) => val == null ? "Required" : null,
+                      ),
                     ),
-                    SizedBox(height: 12),
+                    if (_patientName != null)
+                      Text(
+                        "Patient: $_patientName",
+                        style:
+                            TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+
                     Row(
                       children: [
                         Expanded(
@@ -192,28 +280,29 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
                             title: Text(
                                 "LMP: ${_lmpDate != null ? _lmpDate!.toLocal().toString().split(' ')[0] : 'Select'}"),
                             trailing: Icon(Icons.date_range),
-                            onTap: () => _pickDate(context, true),
+                            onTap: () => _pickDate(context),
                           ),
                         ),
                         Expanded(
                           child: ListTile(
                             title: Text(
-                                "EDD: ${_eddDate != null ? _eddDate!.toLocal().toString().split(' ')[0] : 'Select'}"),
-                            trailing: Icon(Icons.date_range),
-                            onTap: () => _pickDate(context, false),
+                                "EDD: ${_eddDate != null ? _eddDate!.toLocal().toString().split(' ')[0] : 'Auto'}"),
                           ),
                         ),
                       ],
                     ),
+
                     Divider(thickness: 2),
-                    Text("Obstetric History", style: TextStyle(fontWeight: FontWeight.bold)),
-                    _buildDropdown("Delivery", _delivery, (val) => setState(() => _delivery = val)),
-                    _buildDropdown("Abortion", _abortion, (val) => setState(() => _abortion = val)),
+                    Text("Obstetric History",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    _buildTextField("Delivery", _deliveryController),
+                    _buildTextField("Abortion", _abortionController),
                     _buildDropdown("C-Section", _cSection, (val) => setState(() => _cSection = val)),
                     _buildDropdown("Vacuum Extraction", _vacuumExtraction, (val) => setState(() => _vacuumExtraction = val)),
                     _buildDropdown("Symphyisiotomy", _symphyisiotomy, (val) => setState(() => _symphyisiotomy = val)),
-                    _buildDropdown("Haemorrhage", _haemorrhage, (val) => setState(() => _haemorrhage = val)),
+                    _buildTextField("Haemorrhage", _hemorrhageController),
                     _buildDropdown("Pre-Eclampsia", _preEclampsia, (val) => setState(() => _preEclampsia = val)),
+
                     Divider(thickness: 2),
                     Text("Medical History", style: TextStyle(fontWeight: FontWeight.bold)),
                     _buildDropdown("Asthma", _asthma, (val) => setState(() => _asthma = val)),
@@ -223,16 +312,18 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
                     _buildDropdown("Renal Disease", _renalDisease, (val) => setState(() => _renalDisease = val)),
                     _buildDropdown("Fistula Repair", _fistulaRepair, (val) => setState(() => _fistulaRepair = val)),
                     _buildDropdown("Leg/Spine Deformity", _legSpineDeform, (val) => setState(() => _legSpineDeform = val)),
-                    _buildDropdown("Age Risk", _ageRisk, (val) => setState(() => _ageRisk = val)),
+                    _buildTextField("Age Risk", _ageRiskController),
+
                     Divider(thickness: 2),
                     Text("Examination", style: TextStyle(fontWeight: FontWeight.bold)),
-                    _buildDropdown("Height Risk", _heightRisk, (val) => setState(() => _heightRisk = val)),
+                    _buildTextField("Height", _heightController),
                     _buildDropdown("Multiple Pregnancy", _multiplePregnancy, (val) => setState(() => _multiplePregnancy = val)),
-                    _buildDropdown("Syphilis", _syphilis, (val) => setState(() => _syphilis = val)),
-                    _buildDropdown("Hb1", _hb1, (val) => setState(() => _hb1 = val)),
-                    _buildDropdown("Hb2", _hb2, (val) => setState(() => _hb2 = val)),
-                    _buildDropdown("CD4", _cd4, (val) => setState(() => _cd4 = val)),
-                    _buildDropdown("Hep B", _hepB, (val) => setState(() => _hepB = val)),
+                    _buildTextField("Syphilis", _syphilisController),
+                    _buildTextField("HB1", _hb1Controller),
+                    _buildTextField("HB2", _hb2Controller),
+                    _buildTextField("CD4", _cd4Controller),
+                    _buildTextField("HEP B", _hepBController),
+
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _submitForm,

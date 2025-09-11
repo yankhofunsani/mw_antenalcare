@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:mw_antenatalcare/healthproffessional/anc_register.dart';
+import 'package:mw_antenatalcare/healthproffessional/anc_session.dart';
 import 'firebase_options.dart'; 
 import 'auth/login.dart'; 
 import 'healthproffessional/registrationpage.dart';
@@ -8,6 +9,7 @@ import 'patient/homepage.dart';
 import 'patient/session.dart';
 import 'patient/tracker.dart';
 import 'healthproffessional/admindashboard.dart';
+import 'package:mw_antenatalcare/healthproffessional/patientdata.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +41,9 @@ class AdminApp extends StatelessWidget {
       '/session':(context)=>SessionsPage(),
       '/tracker':(context)=>Tracker(),
       '/admindashboard':(context)=>DashboardScreen(), 
-      '/anc_register':(context)=>ANCRegisterPage(), 
+      '/anc_register':(context)=>ANCRegisterPage(),
+      '/anc_session':(context)=>ANCSessionPage(), 
+      '/patientdata':(context)=>PatientHomePage(),
       },
     );
   }

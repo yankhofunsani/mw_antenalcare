@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mw_antenatalcare/healthproffessional/anc_session.dart';
+import 'package:mw_antenatalcare/healthproffessional/patientdata.dart';
 import '/auth/login.dart';
 import '/healthproffessional/registrationpage.dart'; 
 import '/healthproffessional/anc_register.dart';
@@ -56,22 +58,14 @@ class DashboardScreen extends StatelessWidget {
                   context,
                   Icons.folder_shared,
                   "Patient Records",
-                  Scaffold(
-                    appBar: AppBar(title: const Text("Patient Records")),
-                    body: const Center(child: Text("Patient Records Page")),
-                  ),
+                  PatientHomePage()
                 ),
                  _buildSidebarItem(
                   context,
                   Icons.pregnant_woman,
                   "ANC Session details",
-                  Scaffold(
-                    appBar: AppBar(title: const Text("Patient session details")),
-                    body: const Center(child: Text("Patient anc session page")),
-                  ),
+                  ANCSessionPage(),
                 ),
-
-
 
                 const Spacer(),
                 ListTile(
@@ -196,7 +190,6 @@ class _StatCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.color,
-    super.key,
   });
 
   @override
@@ -228,7 +221,7 @@ class _StatCard extends StatelessWidget {
 }
 
 class _AppointmentsCard extends StatelessWidget {
-  const _AppointmentsCard({super.key});
+  const _AppointmentsCard();
 
   @override
   Widget build(BuildContext context) {
@@ -280,7 +273,7 @@ class _AppointmentsCard extends StatelessWidget {
 }
 
 class _TasksCard extends StatelessWidget {
-  const _TasksCard({super.key});
+  const _TasksCard();
 
   @override
   Widget build(BuildContext context) {

@@ -38,6 +38,8 @@ dependencies:
   firebase_auth: ^5.6.0
   cloud_firestore: ^5.6.9
   firebase_analytics: ^11.5.0
+  printing: ^5.10.6   
+  pdf: ^3.11.3 
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +69,8 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/images/background.jpg
+    - assets/images/ministry.jpg
+    - assets/images/patientdatabackg.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

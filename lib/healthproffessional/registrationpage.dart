@@ -13,6 +13,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   String? sex;
   final List<String> sexOptions = ['Male', 'Female'];
+
   final firstnameController = TextEditingController();
   final surnameController = TextEditingController();
   final ageController = TextEditingController();
@@ -23,10 +24,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final villageController = TextEditingController();
   final phoneController = TextEditingController();
 
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Register the user with email and password
+        final existing = await FirebaseFirestore.instance
+            .collection('patients')
+            .where('email', isEqualTo: emailController.text.trim())
+            .get();
+
+        if (existing.docs.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Patient with this email already exists')),
+          );
+          return;
+        }
+
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
           email: emailController.text.trim(),
@@ -34,6 +46,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
         );
 
         String uid = userCredential.user!.uid;
+
+            // reg no generation
+        final patientSnap =
+            await FirebaseFirestore.instance.collection('patients').get();
+        int nextNumber = patientSnap.docs.length + 1;
+        String regNo = nextNumber.toString().padLeft(3, '0'); // e.g. 003
+
+        // Save to users collection
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'firstname': firstnameController.text.trim(),
           'surname': surnameController.text.trim(),
@@ -47,13 +67,36 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'createdAt': FieldValue.serverTimestamp(),
         });
 
+        //if its a patient
+        if (roleController.text.trim().toLowerCase() == "patient") {
+          await FirebaseFirestore.instance.collection('patients').doc(uid).set({
+            'registration_number': regNo,
+            'firstname': firstnameController.text.trim(),
+            'surname': surnameController.text.trim(),
+            'age': ageController.text.trim(),
+            'sex': sex,
+            'email': emailController.text.trim(),
+            'username': usernameController.text.trim(),
+            'village': villageController.text.trim(),
+            'phone': phoneController.text.trim(),
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+
+        // 🔹 Simulated credentials sending
+        if (emailController.text.isNotEmpty) {
+          print("Send email to ${emailController.text} with username & password");
+        } else if (phoneController.text.isNotEmpty) {
+          print("Send SMS to ${phoneController.text} with username & password");
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration Successful')),
+          SnackBar(content: Text('Registration Successful - Reg No: $regNo')),
         );
+        
         Navigator.pushReplacementNamed(context, '/admindashboard');
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.message}')),
+          SnackBar(content: Text('Auth Error: ${e.message}')),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -94,7 +137,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
               children: [
                 const DrawerHeader(
                   child: Text(
-                    "QTECH ANTENATAL CARE",
+                    "QUEEN ELIZABETH HOSPITAL",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -109,24 +152,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   leading: const Icon(Icons.person_add),
                   title: const Text("Register User"),
                   onTap: () {
-                    Navigator.pushReplacementNamed(context, '/registration');
+                    Navigator.pushReplacementNamed(context, '/register');
                   },
                 ),
               ],
             ),
           ),
 
-          // CONTENT AREA
+          // CONTENT
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Register User",
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
+                  const Text("Register User",
+                      style:
+                          TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
 
                   Card(
@@ -196,18 +238,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               child: const Text("Register",
                                   style: TextStyle(
                                       fontSize: 16,
+                                      color: Colors.white,
                                       fontWeight: FontWeight.bold)),
-                            ),
-                            const SizedBox(height: 12),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushReplacementNamed(
-                                    context, '/admindashboard');
-                              },
-                              child: const Text(
-                                "Already have an account? Login",
-                                style: TextStyle(color: Colors.grey)
-                              ),
                             ),
                           ],
                         ),
