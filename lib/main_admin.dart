@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:mw_antenatalcare/healthproffessional/anc_register.dart';
 import 'package:mw_antenatalcare/healthproffessional/anc_session.dart';
+import 'package:mw_antenatalcare/healthproffessional/appointment.dart';
 import 'firebase_options.dart'; 
 import 'auth/login.dart'; 
 import 'healthproffessional/registrationpage.dart';
@@ -44,6 +45,7 @@ class AdminApp extends StatelessWidget {
       '/anc_register':(context)=>ANCRegisterPage(),
       '/anc_session':(context)=>ANCSessionPage(), 
       '/patientdata':(context)=>PatientHomePage(),
+      '/appointment':(context)=>AppointmentPage(),
       },
     );
   }

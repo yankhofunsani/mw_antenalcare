@@ -10,7 +10,7 @@ class HomePage extends StatelessWidget {
   String? userEmail = FirebaseAuth.instance.currentUser?.email;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome' ,style: TextStyle(color:Colors.white)),
+        title: Text('Welcome $userEmail' ,style: TextStyle(color:Colors.white)),
         backgroundColor: Colors.pinkAccent,
         actions: [
           IconButton(               

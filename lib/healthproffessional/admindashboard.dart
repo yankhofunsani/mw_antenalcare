@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mw_antenatalcare/healthproffessional/anc_session.dart';
+import 'package:mw_antenatalcare/healthproffessional/appointment.dart';
 import 'package:mw_antenatalcare/healthproffessional/patientdata.dart';
 import '/auth/login.dart';
 import '/healthproffessional/registrationpage.dart'; 
@@ -43,10 +44,7 @@ class DashboardScreen extends StatelessWidget {
                   context,
                   Icons.event,
                   "Appointments",
-                  Scaffold(
-                    appBar: AppBar(title: const Text("Appointments")),
-                    body: const Center(child: Text("Appointments Page")),
-                  ),
+                   AppointmentPage(),
                 ),
                 _buildSidebarItem(
                   context,

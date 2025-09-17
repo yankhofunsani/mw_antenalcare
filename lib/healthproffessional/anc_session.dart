@@ -28,11 +28,12 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
   final _threeTcMotherController = TextEditingController();
   final _nvpBabyController = TextEditingController();
 
-  // Dropdowns for Y/N
+  // Dropdowns
   String? _onCPT;
   String? _onART;
-
   final List<String> yesNoOptions = ['Y', 'N'];
+
+  // Patient data
   String? _selectedRegNumber;
   String? _patientName;
   List<String> _availableRegNumbers = [];
@@ -51,8 +52,11 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
 
   Future<void> _fetchRegistrationNumbers() async {
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('patients').get();
-      final numbers = snapshot.docs.map((doc) => doc['registration_number'].toString()).toList();
+      final snapshot =
+          await FirebaseFirestore.instance.collection('patients').get();
+      final numbers = snapshot.docs
+          .map((doc) => doc['registration_number'].toString())
+          .toList();
       setState(() {
         _availableRegNumbers = numbers;
       });
@@ -91,7 +95,7 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
           "registration_number": _selectedRegNumber,
           "patient_name": _patientName,
           "visit": {
-            "visit_date": visitDate.toIso8601String(),
+            "visit_date": Timestamp.fromDate(visitDate), 
             "gest_age": _gestAgeController.text,
             "fundal_height": _fundalHeightController.text,
             "position_presentation": _positionController.text,
@@ -108,10 +112,11 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
             "on_cpt": _onCPT,
             "on_art": _onART,
             "remarks": _remarksController.text,
-            "next_visit_date": nextVisitDate.toIso8601String(),
+            "next_visit_date":
+                Timestamp.fromDate(nextVisitDate), 
             "sign": _signController.text,
           },
-          "createdAt": FieldValue.serverTimestamp(),
+          "createdAt": FieldValue.serverTimestamp(), 
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -125,25 +130,30 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
     }
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(
+      String label, TextEditingController controller) {
     return SizedBox(
       width: 250,
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
         validator: (val) => val!.isEmpty ? "Required" : null,
       ),
     );
   }
 
-  Widget _buildDropdown(String label, String? value, Function(String?) onChanged) {
+  Widget _buildDropdown(
+      String label, String? value, Function(String?) onChanged) {
     return SizedBox(
       width: 250,
       child: DropdownButtonFormField<String>(
-        decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
         value: value,
         items: yesNoOptions.map((opt) {
           return DropdownMenuItem(value: opt, child: Text(opt));
@@ -174,7 +184,9 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
                     Flexible(
                       child: Text(
                         "QUEEN ELIZABETH HOSPITAL",
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -182,15 +194,20 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
                 ),
                 const SizedBox(height: 50),
                 ListTile(
-                  leading: const Icon(Icons.dashboard, color: Colors.black),
-                  title: const Text("Dashboard", style: TextStyle(color: Colors.black)),
+                  leading:
+                      const Icon(Icons.dashboard, color: Colors.black),
+                  title: const Text("Dashboard",
+                      style: TextStyle(color: Colors.black)),
                   onTap: () {
-                    Navigator.pushReplacementNamed(context, "/admindashboard");
+                    Navigator.pushReplacementNamed(
+                        context, "/admindashboard");
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.assignment, color: Colors.black),
-                  title: const Text("ANC Session Details", style: TextStyle(color: Colors.black)),
+                  leading:
+                      const Icon(Icons.assignment, color: Colors.black),
+                  title: const Text("ANC Session Details",
+                      style: TextStyle(color: Colors.black)),
                   onTap: () {},
                 ),
               ],
@@ -207,15 +224,19 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
                   runSpacing: 16,
                   children: [
                     const Text("ANC SESSION VISIT DETAILS",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18)),
                     Text(
                       "Visit Date: ${visitDate.day}/${visitDate.month}/${visitDate.year}",
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       "Next Visit Date: ${nextVisitDate.day}/${nextVisitDate.month}/${nextVisitDate.year}",
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
                     ),
                     SizedBox(
                       width: 250,
@@ -226,7 +247,8 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
                         ),
                         value: _selectedRegNumber,
                         items: _availableRegNumbers.map((num) {
-                          return DropdownMenuItem(value: num, child: Text(num));
+                          return DropdownMenuItem(
+                              value: num, child: Text(num));
                         }).toList(),
                         onChanged: (val) {
                           setState(() {
@@ -243,11 +265,15 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
                     if (_patientName != null)
                       Text("Patient: $_patientName",
                           style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black)),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black)),
 
                     _buildTextField("Gest. Age", _gestAgeController),
-                    _buildTextField("Fundal Height", _fundalHeightController),
-                    _buildTextField("Position & Presentation", _positionController),
+                    _buildTextField(
+                        "Fundal Height", _fundalHeightController),
+                    _buildTextField(
+                        "Position & Presentation", _positionController),
                     _buildTextField("Fetal Heart", _fetalHeartController),
                     _buildTextField("Weight (kg)", _weightController),
                     _buildTextField("BP", _bpController),
@@ -258,17 +284,23 @@ class _ANCSessionPageState extends State<ANCSessionPage> {
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     _buildTextField("SP", _spController),
                     _buildTextField("Fe/Fc", _fefcController),
-                    _buildTextField("NVP (Mother)", _nvpMotherController),
-                    _buildTextField("AZT (Mother)", _aztMotherController),
-                    _buildTextField("3TC (Mother)", _threeTcMotherController),
+                    _buildTextField(
+                        "NVP (Mother)", _nvpMotherController),
+                    _buildTextField(
+                        "AZT (Mother)", _aztMotherController),
+                    _buildTextField(
+                        "3TC (Mother)", _threeTcMotherController),
                     _buildTextField("NVP (Baby)", _nvpBabyController),
 
                     const Divider(),
                     const Text("Other Information",
                         style: TextStyle(fontWeight: FontWeight.bold)),
-                    _buildDropdown("On CPT", _onCPT, (val) => setState(() => _onCPT = val)),
-                    _buildDropdown("On ART", _onART, (val) => setState(() => _onART = val)),
-                    _buildTextField("Remarks / Medications", _remarksController),
+                    _buildDropdown("On CPT", _onCPT,
+                        (val) => setState(() => _onCPT = val)),
+                    _buildDropdown("On ART", _onART,
+                        (val) => setState(() => _onART = val)),
+                    _buildTextField(
+                        "Remarks / Medications", _remarksController),
                     _buildTextField("Sign", _signController),
 
                     const SizedBox(height: 20),

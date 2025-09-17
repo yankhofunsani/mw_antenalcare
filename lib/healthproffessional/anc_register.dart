@@ -110,12 +110,19 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() && _selectedRegNumber != null) {
       try {
-        await FirebaseFirestore.instance.collection('anc_registers').add({
+
+        final query = await FirebaseFirestore.instance
+            .collection('anc_registers')
+            .where('registration_number', isEqualTo: _selectedRegNumber)
+            .limit(1)
+            .get();
+
+        final data = {
           "facility_name": "QUEEN ELIZABETH CENTRAL HOSPITAL",
           "registration_number": _selectedRegNumber,
           "patient_name": _patientName,
-          "lmp": _lmpDate?.toIso8601String(),
-          "edd": _eddDate?.toIso8601String(),
+          "lmp": _lmpDate != null ? Timestamp.fromDate(_lmpDate!) : null,
+          "edd": _eddDate != null ? Timestamp.fromDate(_eddDate!) : null,
           "obstetric_history": {
             "delivery": _deliveryController.text,
             "abortion": _abortionController.text,
@@ -144,11 +151,23 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
             "cd4": _cd4Controller.text,
             "hep_b": _hepBController.text,
           },
-          "createdAt": FieldValue.serverTimestamp(),
-        });
+          "updatedAt": FieldValue.serverTimestamp(),
+        };
+
+        if (query.docs.isNotEmpty) {
+          // Update existing record
+          await FirebaseFirestore.instance
+              .collection('anc_registers')
+              .doc(query.docs.first.id)
+              .update(data);
+        } else {
+          // Create new record
+          data["createdAt"] = FieldValue.serverTimestamp();
+          await FirebaseFirestore.instance.collection('anc_registers').add(data);
+        }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Form submitted successfully!')),
+          const SnackBar(content: Text('Form saved successfully!')),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -163,7 +182,8 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
     return SizedBox(
       width: 250,
       child: DropdownButtonFormField<String>(
-        decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
+        decoration:
+            InputDecoration(labelText: label, border: OutlineInputBorder()),
         value: value,
         items: yesNoOptions
             .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
@@ -179,7 +199,8 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
       width: 250,
       child: TextFormField(
         controller: controller,
-        decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
+        decoration:
+            InputDecoration(labelText: label, border: OutlineInputBorder()),
         validator: (val) => val!.isEmpty ? "Required" : null,
       ),
     );
@@ -196,33 +217,36 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
             color: Colors.grey.shade100,
             child: Column(
               children: [
-                SizedBox(height: 50),
+                const SizedBox(height: 50),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.local_hospital, color: Colors.blue, size: 40),
-                    SizedBox(width: 10),
+                    const Icon(Icons.local_hospital,
+                        color: Colors.blue, size: 40),
+                    const SizedBox(width: 10),
                     Flexible(
                       child: Text(
                         "QUEEN ELIZABETH HOSPITAL",
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.black, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 50),
+                const SizedBox(height: 50),
                 ListTile(
-                  leading: Icon(Icons.dashboard, color: Colors.black),
-                  title: Text("Dashboard", style: TextStyle(color: Colors.black)),
+                  leading: const Icon(Icons.dashboard, color: Colors.black),
+                  title: const Text("Dashboard",
+                      style: TextStyle(color: Colors.black)),
                   onTap: () {
                     Navigator.pushReplacementNamed(context, "/admindashboard");
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.assignment, color: Colors.black),
-                  title: Text("ANC Register", style: TextStyle(color: Colors.black)),
+                  leading: const Icon(Icons.assignment, color: Colors.black),
+                  title: const Text("ANC Register",
+                      style: TextStyle(color: Colors.black)),
                   onTap: () {},
                 ),
               ],
@@ -231,19 +255,20 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
           // Main Form Content
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
                 child: Wrap(
                   spacing: 16,
                   runSpacing: 16,
                   children: [
-                    Text("ANC REGISTER DETAILS FORM",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    const Text("ANC REGISTER DETAILS FORM",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18)),
                     SizedBox(
                       width: 250,
                       child: DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: "Registration Number",
                           border: OutlineInputBorder(),
                         ),
@@ -269,8 +294,8 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
                     if (_patientName != null)
                       Text(
                         "Patient: $_patientName",
-                        style:
-                            TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
                       ),
 
                     Row(
@@ -279,7 +304,7 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
                           child: ListTile(
                             title: Text(
                                 "LMP: ${_lmpDate != null ? _lmpDate!.toLocal().toString().split(' ')[0] : 'Select'}"),
-                            trailing: Icon(Icons.date_range),
+                            trailing: const Icon(Icons.date_range),
                             onTap: () => _pickDate(context),
                           ),
                         ),
@@ -292,42 +317,56 @@ class _ANCRegisterPageState extends State<ANCRegisterPage> {
                       ],
                     ),
 
-                    Divider(thickness: 2),
-                    Text("Obstetric History",
+                    const Divider(thickness: 2),
+                    const Text("Obstetric History",
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     _buildTextField("Delivery", _deliveryController),
                     _buildTextField("Abortion", _abortionController),
-                    _buildDropdown("C-Section", _cSection, (val) => setState(() => _cSection = val)),
-                    _buildDropdown("Vacuum Extraction", _vacuumExtraction, (val) => setState(() => _vacuumExtraction = val)),
-                    _buildDropdown("Symphyisiotomy", _symphyisiotomy, (val) => setState(() => _symphyisiotomy = val)),
+                    _buildDropdown("C-Section", _cSection,
+                        (val) => setState(() => _cSection = val)),
+                    _buildDropdown("Vacuum Extraction", _vacuumExtraction,
+                        (val) => setState(() => _vacuumExtraction = val)),
+                    _buildDropdown("Symphyisiotomy", _symphyisiotomy,
+                        (val) => setState(() => _symphyisiotomy = val)),
                     _buildTextField("Haemorrhage", _hemorrhageController),
-                    _buildDropdown("Pre-Eclampsia", _preEclampsia, (val) => setState(() => _preEclampsia = val)),
+                    _buildDropdown("Pre-Eclampsia", _preEclampsia,
+                        (val) => setState(() => _preEclampsia = val)),
 
-                    Divider(thickness: 2),
-                    Text("Medical History", style: TextStyle(fontWeight: FontWeight.bold)),
-                    _buildDropdown("Asthma", _asthma, (val) => setState(() => _asthma = val)),
-                    _buildDropdown("Hypertension", _hypertension, (val) => setState(() => _hypertension = val)),
-                    _buildDropdown("Diabetes", _diabetes, (val) => setState(() => _diabetes = val)),
-                    _buildDropdown("Epilepsy", _epilepsy, (val) => setState(() => _epilepsy = val)),
-                    _buildDropdown("Renal Disease", _renalDisease, (val) => setState(() => _renalDisease = val)),
-                    _buildDropdown("Fistula Repair", _fistulaRepair, (val) => setState(() => _fistulaRepair = val)),
-                    _buildDropdown("Leg/Spine Deformity", _legSpineDeform, (val) => setState(() => _legSpineDeform = val)),
+                    const Divider(thickness: 2),
+                    const Text("Medical History",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    _buildDropdown("Asthma", _asthma,
+                        (val) => setState(() => _asthma = val)),
+                    _buildDropdown("Hypertension", _hypertension,
+                        (val) => setState(() => _hypertension = val)),
+                    _buildDropdown("Diabetes", _diabetes,
+                        (val) => setState(() => _diabetes = val)),
+                    _buildDropdown("Epilepsy", _epilepsy,
+                        (val) => setState(() => _epilepsy = val)),
+                    _buildDropdown("Renal Disease", _renalDisease,
+                        (val) => setState(() => _renalDisease = val)),
+                    _buildDropdown("Fistula Repair", _fistulaRepair,
+                        (val) => setState(() => _fistulaRepair = val)),
+                    _buildDropdown("Leg/Spine Deformity", _legSpineDeform,
+                        (val) => setState(() => _legSpineDeform = val)),
                     _buildTextField("Age Risk", _ageRiskController),
 
-                    Divider(thickness: 2),
-                    Text("Examination", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Divider(thickness: 2),
+                    const Text("Examination",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     _buildTextField("Height", _heightController),
-                    _buildDropdown("Multiple Pregnancy", _multiplePregnancy, (val) => setState(() => _multiplePregnancy = val)),
+                    _buildDropdown("Multiple Pregnancy", _multiplePregnancy,
+                        (val) => setState(() => _multiplePregnancy = val)),
                     _buildTextField("Syphilis", _syphilisController),
                     _buildTextField("HB1", _hb1Controller),
                     _buildTextField("HB2", _hb2Controller),
                     _buildTextField("CD4", _cd4Controller),
                     _buildTextField("HEP B", _hepBController),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _submitForm,
-                      child: Text("Submit"),
+                      child: const Text("Submit"),
                     ),
                   ],
                 ),
