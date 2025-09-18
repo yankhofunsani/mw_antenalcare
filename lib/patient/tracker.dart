@@ -90,11 +90,12 @@ class _TrackerState extends State<Tracker> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Pregnancy Tracker",
-          style: TextStyle(color: Colors.white),
+        title:  Text(
+             "My pregnancy Tracker",
+          style: TextStyle(color: Colors.black),
         ),
-        backgroundColor: Colors.pinkAccent,
+        backgroundColor:Colors.grey.shade100,
+        leading: const Icon(Icons.pregnant_woman_rounded, color: Colors.black)
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())

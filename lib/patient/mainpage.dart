@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mw_antenatalcare/patient/analytics.dart';
 import 'package:mw_antenatalcare/patient/session.dart';
 import 'homepage.dart';
 import 'tracker.dart';
+import 'profile.dart';
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -16,8 +18,8 @@ class _MainPageState extends State<MainPage> {
     HomePage(),
     SessionsPage(),
     Tracker(),
-    Center(child: Text('Analytics Page')),
-    Center(child: Text('Profile Page')),
+    Analytics(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
