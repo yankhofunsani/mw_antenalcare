@@ -11,6 +11,14 @@ class AppointmentPage extends StatefulWidget {
   State<AppointmentPage> createState() => _AppointmentPageState();
 }
 
+enum MenuItem {
+  home,
+  scheduleSession,
+  scheduleSpecial,
+  deleteSessions,
+  deleteAppointments,
+}
+
 class _AppointmentPageState extends State<AppointmentPage> {
   DateTime? _selectedDate;
   List<Map<String, dynamic>> _patients = [];
@@ -19,11 +27,12 @@ class _AppointmentPageState extends State<AppointmentPage> {
   int specialAppointments = 0;
   int ancSessions = 0;
 
+  MenuItem _selectedMenu = MenuItem.home;
+
   Future<void> _fetchPatientsForDate(DateTime date) async {
     final lowerBound = date.subtract(const Duration(days: 5));
     final upperBound = date.add(const Duration(days: 5));
 
-    //  session_data with next_visit in range
     final sessionSnap = await FirebaseFirestore.instance
         .collection('session_data')
         .where('next_visit_date', isGreaterThanOrEqualTo: Timestamp.fromDate(lowerBound))
@@ -61,7 +70,6 @@ class _AppointmentPageState extends State<AppointmentPage> {
     });
   }
 
-  //Save into ANC_session_register
   Future<void> _saveSession() async {
     if (_selectedDate == null || _selectedPatients.isEmpty) return;
 
@@ -85,7 +93,6 @@ class _AppointmentPageState extends State<AppointmentPage> {
     _printSummary(selectedData);
   }
 
-  //Print session data
   Future<void> _printSummary(List<Map<String, dynamic>> data) async {
     final pdf = pw.Document();
 
@@ -111,7 +118,6 @@ class _AppointmentPageState extends State<AppointmentPage> {
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
-  //Pick date
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -138,122 +144,142 @@ class _AppointmentPageState extends State<AppointmentPage> {
               children: [
                 const SizedBox(height: 50),
                 const Text("Menu", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                ListTile(
-                  leading: const Icon(Icons.event, color: Colors.black),
-                  title: const Text("Appointments", style: TextStyle(color: Colors.black)),
-                  onTap: () {}, 
-                ),
+                _buildSidebarItem(MenuItem.home, "Home", Icons.home),
+                _buildSidebarItem(MenuItem.scheduleSession, "Schedule Antenatal Care", Icons.calendar_today),
+                _buildSidebarItem(MenuItem.scheduleSpecial, "Schedule Special Appointment", Icons.event_available),
+                _buildSidebarItem(MenuItem.deleteSessions, "Delete Old Sessions", Icons.delete),
+                _buildSidebarItem(MenuItem.deleteAppointments, "Delete Old Appointments", Icons.delete_forever),
+                const Divider(),
                 ListTile(
                   leading: const Icon(Icons.dashboard, color: Colors.black),
                   title: const Text("Dashboard", style: TextStyle(color: Colors.black)),
-                  onTap: () {
-                    Navigator.pushReplacementNamed(context, "/admindashboard");
-                  },
+                  onTap: () => Navigator.pushReplacementNamed(context, "/admindashboard"),
                 ),
               ],
             ),
           ),
 
-          // Main content
+          
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Special Appointment Requests: $specialAppointments"),
-                        Text("ANC Sessions Scheduled: $ancSessions"),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: [
-                      _buildActionCard("Schedule Antenatal Care Session", Icons.calendar_today, _pickDate),
-                      _buildActionCard("Schedule Special Appointment", Icons.event_available, () {}),
-                      _buildActionCard("Delete Old Sessions", Icons.delete, () {}),
-                      _buildActionCard("Delete Old Appointments", Icons.delete_forever, () {}),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  if (_selectedDate != null) ...[
-                    Text("Patients around ${DateFormat('yyyy-MM-dd').format(_selectedDate!)}",
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 10),
-
-                    if (_patients.isEmpty)
-                      const Text(
-                        "No patients needing the session are available close to this date.",
-                        style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                      )
-                    else
-                      Column(
-                        children: [
-                          DataTable(
-                            columns: const [
-                              DataColumn(label: Text("Select")),
-                              DataColumn(label: Text("Reg No")),
-                              DataColumn(label: Text("Name")),
-                              DataColumn(label: Text("Next Visit")),
-                            ],
-                            rows: _patients.map((p) {
-                              return DataRow(
-                                selected: _selectedPatients.contains(p['id']),
-                                onSelectChanged: (selected) {
-                                  setState(() {
-                                    if (selected == true) {
-                                      _selectedPatients.add(p['id']);
-                                    } else {
-                                      _selectedPatients.remove(p['id']);
-                                    }
-                                  });
-                                },
-                                cells: [
-                                  DataCell(Checkbox(
-                                    value: _selectedPatients.contains(p['id']),
-                                    onChanged: (val) {
-                                      setState(() {
-                                        if (val == true) {
-                                          _selectedPatients.add(p['id']);
-                                        } else {
-                                          _selectedPatients.remove(p['id']);
-                                        }
-                                      });
-                                    },
-                                  )),
-                                  DataCell(Text(p['registration_number'])),
-                                  DataCell(Text(p['name'])),
-                                  DataCell(Text(DateFormat('yyyy-MM-dd').format(p['next_visit']))),
-                                ],
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(onPressed: _saveSession, child: const Text("Save Session")),
-                        ],
-                      ),
-                  ],
-                ],
-              ),
+              child: _buildMainContent(),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildSidebarItem(MenuItem item, String title, IconData icon) {
+    return ListTile(
+      leading: Icon(icon, color: _selectedMenu == item ? Colors.blue : Colors.black),
+      title: Text(title, style: TextStyle(color: _selectedMenu == item ? Colors.blue : Colors.black)),
+      selected: _selectedMenu == item,
+      onTap: () {
+        setState(() {
+          _selectedMenu = item;
+        });
+      },
+    );
+  }
+
+  Widget _buildMainContent() {
+    switch (_selectedMenu) {
+      case MenuItem.home:
+        return Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: [
+            _buildActionCard("Schedule Antenatal Care Session", Icons.calendar_today, () {
+              setState(() => _selectedMenu = MenuItem.scheduleSession);
+            }),
+            _buildActionCard("Schedule Special Appointment", Icons.event_available, () {
+              setState(() => _selectedMenu = MenuItem.scheduleSpecial);
+            }),
+            _buildActionCard("Delete Old Sessions", Icons.delete, () {
+              setState(() => _selectedMenu = MenuItem.deleteSessions);
+            }),
+            _buildActionCard("Delete Old Appointments", Icons.delete_forever, () {
+              setState(() => _selectedMenu = MenuItem.deleteAppointments);
+            }),
+          ],
+        );
+
+      case MenuItem.scheduleSession:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ElevatedButton(onPressed: _pickDate, child: const Text("Pick Session Date")),
+            const SizedBox(height: 20),
+            if (_selectedDate != null) ...[
+              Text("Patients around ${DateFormat('yyyy-MM-dd').format(_selectedDate!)}",
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              if (_patients.isEmpty)
+                const Text(
+                  "No patients needing the session are available close to this date.",
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                )
+              else
+                Column(
+                  children: [
+                    DataTable(
+                      columns: const [
+                        DataColumn(label: Text("Select")),
+                        DataColumn(label: Text("Reg No")),
+                        DataColumn(label: Text("Name")),
+                        DataColumn(label: Text("Next Visit")),
+                      ],
+                      rows: _patients.map((p) {
+                        return DataRow(
+                          selected: _selectedPatients.contains(p['id']),
+                          onSelectChanged: (selected) {
+                            setState(() {
+                              if (selected == true) {
+                                _selectedPatients.add(p['id']);
+                              } else {
+                                _selectedPatients.remove(p['id']);
+                              }
+                            });
+                          },
+                          cells: [
+                            DataCell(Checkbox(
+                              value: _selectedPatients.contains(p['id']),
+                              onChanged: (val) {
+                                setState(() {
+                                  if (val == true) {
+                                    _selectedPatients.add(p['id']);
+                                  } else {
+                                    _selectedPatients.remove(p['id']);
+                                  }
+                                });
+                              },
+                            )),
+                            DataCell(Text(p['registration_number'])),
+                            DataCell(Text(p['name'])),
+                            DataCell(Text(DateFormat('yyyy-MM-dd').format(p['next_visit']))),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(onPressed: _saveSession, child: const Text("Save Session")),
+                  ],
+                ),
+            ],
+          ],
+        );
+
+      case MenuItem.scheduleSpecial:
+        return const Text("Special Appointment scheduling screen (to be implemented)");
+
+      case MenuItem.deleteSessions:
+        return const Text("Delete old sessions screen (to be implemented)");
+
+      case MenuItem.deleteAppointments:
+        return const Text("Delete old appointments screen (to be implemented)");
+    }
   }
 
   Widget _buildActionCard(String title, IconData icon, VoidCallback onTap) {

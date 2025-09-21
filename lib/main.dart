@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pdf/widgets.dart';
 import 'healthproffessional/registrationpage.dart';
 import 'auth/login.dart';
 import 'package:firebase_core/firebase_core.dart';
