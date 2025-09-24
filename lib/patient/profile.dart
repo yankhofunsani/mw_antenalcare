@@ -66,17 +66,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
           if (obstetricSnap.docs.isNotEmpty) {
             final data = obstetricSnap.docs.first.data();
-            final obstetric_history = data["obstetric_history"] as Map<String, dynamic>;
+             obstetricHistory = data["obstetric_history"] as Map<String, dynamic>;
 
             setState(() {
               obstetricHistory = {
-                'Abortion': obstetric_history['abortion'].toString(),
-                'C-Section': obstetric_history['c_section'].toString(),
-                'Delivery': obstetric_history['delivery'].toString(),
-                'Haemorrhage': obstetric_history['haemorrhage'].toString(),
-                'Pre-eclampsia': obstetric_history['pre_eclampsia'].toString(),
-                'Symphyisiotomy': obstetric_history['symphyisiotomy'].toString(),
-                'Vacuum Extraction': obstetric_history['vacuum_extraction'].toString(),
+                'Abortion': obstetricHistory['abortion'].toString(),
+                'C-Section': obstetricHistory['c_section'].toString(),
+                'Delivery': obstetricHistory['delivery'].toString(),
+                'Haemorrhage': obstetricHistory['haemorrhage'].toString(),
+                'Pre-eclampsia': obstetricHistory['pre_eclampsia'].toString(),
+                'Symphyisiotomy': obstetricHistory['symphyisiotomy'].toString(),
+                'Vacuum Extraction': obstetricHistory['vacuum_extraction'].toString(),
               };
             });
           }

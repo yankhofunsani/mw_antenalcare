@@ -51,9 +51,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
         final patientSnap =
             await FirebaseFirestore.instance.collection('patients').get();
         int nextNumber = patientSnap.docs.length + 1;
-        String regNo = nextNumber.toString().padLeft(3, '0'); // e.g. 003
+        String regNo = nextNumber.toString().padLeft(3, '0'); 
 
-        // Save to users collection
+        // Savve user in users collectiom
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'firstname': firstnameController.text.trim(),
           'surname': surnameController.text.trim(),
@@ -67,7 +67,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'createdAt': FieldValue.serverTimestamp(),
         });
 
-        //if its a patient
+        // patient collection
         if (roleController.text.trim().toLowerCase() == "patient") {
           await FirebaseFirestore.instance.collection('patients').doc(uid).set({
             'registration_number': regNo,
@@ -83,7 +83,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           });
         }
 
-        // 🔹 Simulated credentials sending
+        // email sending 
         if (emailController.text.isNotEmpty) {
           print("Send email to ${emailController.text} with username & password");
         } else if (phoneController.text.isNotEmpty) {

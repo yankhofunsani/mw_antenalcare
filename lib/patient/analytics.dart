@@ -199,7 +199,7 @@ class _AnalyticsState extends State<Analytics> {
                         child: Text(rec['remarks'].toString()),
                       ),
                     ]);
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
