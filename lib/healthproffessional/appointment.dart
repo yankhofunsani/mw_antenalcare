@@ -72,7 +72,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
     });
   }
 
-  // --Scheduled sessions-- //
+  //Schedule ANC session
   Stream<QuerySnapshot> _scheduledSessionsStream() {
     return FirebaseFirestore.instance
         .collection('ANC_session_register')

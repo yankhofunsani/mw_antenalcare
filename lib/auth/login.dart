@@ -16,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
 
   String errorMessage = '';
   bool isLoading = false;
-  bool _obscurePassword = true; // Password toggle
+  bool _obscurePassword = true; 
 
   Future<void> loginUser() async {
     setState(() {
@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
       String password = passwordController.text.trim();
       String email = identifier;
 
-      // Convert username → email if needed
+      
       if (!identifier.contains('@')) {
         final result = await FirebaseFirestore.instance
             .collection('users')
@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
         email = result.docs.first['email'];
       }
 
-      // Firebase sign in
+    
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
@@ -61,13 +61,13 @@ class _LoginPageState extends State<LoginPage> {
 
         if (role == 'patient') {
           Navigator.pushReplacement(
-            context,
+            context,                                                                                     
             MaterialPageRoute(builder: (_) => MainPage()),
           );
         } else if (role == 'clerk') {
-          Navigator.pushReplacementNamed(context, '/admindashboard');
+          Navigator.pushReplacementNamed(context, '/admindashboard');                                      
         } else if (role == 'doctor' || role == 'midwife') {
-          Navigator.pushReplacementNamed(context, '/doctorhome');
+          Navigator.pushReplacementNamed(context, '/doctorhome');                                             
         } else {
           setState(() {
             errorMessage = 'Role not recognized. Contact admin.';

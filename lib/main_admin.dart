@@ -11,6 +11,7 @@ import 'patient/session.dart';
 import 'patient/tracker.dart';
 import 'healthproffessional/admindashboard.dart';
 import 'package:mw_antenatalcare/healthproffessional/patientdata.dart';
+import  'healthproffessional/doctorhome.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +47,8 @@ class AdminApp extends StatelessWidget {
       '/anc_session':(context)=>ANCSessionPage(), 
       '/patientdata':(context)=>PatientHomePage(),
       '/appointment':(context)=>AppointmentPage(),
+      '/doctorhome':(context)=>DoctorHomePage()
+
       },
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mw_antenatalcare/healthproffessional/doctorhome.dart';
 import 'healthproffessional/registrationpage.dart';
 import 'auth/login.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -30,6 +31,7 @@ void main() async {
       '/admindashboard':(context)=>DashboardScreen(), 
       '/profile':(context)=>ProfilePage(),
       '/analytics':(context)=>Analytics(),
+      '/doctorhome':(context)=>DoctorHomePage()
        },
   debugShowCheckedModeBanner: false,
   )

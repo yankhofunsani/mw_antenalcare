@@ -1,14 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import 'package:mw_antenatalcare/healthproffessional/anc_session.dart';
 import 'package:mw_antenatalcare/healthproffessional/appointment.dart';
 import 'package:mw_antenatalcare/healthproffessional/patientdata.dart';
 import '/auth/login.dart';
-import '/healthproffessional/registrationpage.dart'; 
+import '/healthproffessional/registrationpage.dart';
 import '/healthproffessional/anc_register.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int totalPatients = 0;
+  int todaysAppointments = 0;
+  int newRegistrations = 0;
+  int appointmentrequest=0;
+  List<Map<String, dynamic>> todaysAppointmentList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboardData();
+  }
+
+  Future<void> _loadDashboardData() async {
+    final today = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(today);
+
+    // Total patients
+    final patientSnapshot = await FirebaseFirestore.instance.collection('patients').get();
+    final totalPatientsCount = patientSnapshot.docs.length;
+
+    // New registrations (users)
+    final userSnapshot = await FirebaseFirestore.instance.collection('users').get();
+    final newRegistrationsCount = userSnapshot.docs.length;
+
+    // Pending records (appointment_request)
+    final pendingSnapshot = await FirebaseFirestore.instance.collection('appointment_request').get();
+    final request=pendingSnapshot.docs.length;
+
+    // Today's appointments
+    final appointmentSnapshot = await FirebaseFirestore.instance
+        .collection('scheduled_appointments')
+        .where('scheduled_datetime', isGreaterThanOrEqualTo: DateTime(today.year, today.month, today.day))
+        .where('scheduled_datetime', isLessThan: DateTime(today.year, today.month, today.day + 1))
+        .get();
+
+    final todaysAppointmentsCount = appointmentSnapshot.docs.length;
+    final todaysAppointmentsList = appointmentSnapshot.docs.map((doc) => doc.data()).toList();
+
+    setState(() {
+      totalPatients = totalPatientsCount;
+      newRegistrations = newRegistrationsCount;
+      appointmentrequest=request;
+      todaysAppointments = todaysAppointmentsCount;
+      todaysAppointmentList = todaysAppointmentsList;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,53 +82,19 @@ class DashboardScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ),
-                _buildSidebarItem(
-                  context,
-                  Icons.dashboard,
-                  "Dashboard",
-                  const DashboardScreen(), 
-                ),
-                _buildSidebarItem(
-                  context,
-                  Icons.person_add,
-                  "Register User",
-                  const RegistrationPage(), 
-                ),
-                _buildSidebarItem(
-                  context,
-                  Icons.event,
-                  "Appointments",
-                   AppointmentPage(),
-                ),
-                _buildSidebarItem(
-                  context,
-                  Icons.pregnant_woman,
-                  "ANC Registration",
-                    ANCRegisterPage(),
-                ),
-                _buildSidebarItem(
-                  context,
-                  Icons.folder_shared,
-                  "Patient Records",
-                  PatientHomePage()
-                ),
-                 _buildSidebarItem(
-                  context,
-                  Icons.pregnant_woman,
-                  "ANC Session details",
-                  ANCSessionPage(),
-                ),
-
+                _buildSidebarItem(context, Icons.dashboard, "Dashboard", const DashboardScreen()),
+                _buildSidebarItem(context, Icons.person_add, "Register User", const RegistrationPage()),
+                _buildSidebarItem(context, Icons.event, "Appointments", AppointmentPage()),
+                _buildSidebarItem(context, Icons.pregnant_woman, "ANC Registration", ANCRegisterPage()),
+                _buildSidebarItem(context, Icons.folder_shared, "Patient Records", PatientHomePage()),
+                _buildSidebarItem(context, Icons.pregnant_woman, "ANC Session details", ANCSessionPage()),
                 const Spacer(),
                 ListTile(
                   leading: const Icon(Icons.logout),
                   title: const Text("Logout"),
                   onTap: () async {
                     await FirebaseAuth.instance.signOut();
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                    );
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
                   },
                 ),
               ],
@@ -94,14 +114,14 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Stats row
+          //rows 
                   Row(
-                    children: const [
+                    children: [
                       Expanded(
                         child: _StatCard(
                           title: "Total Patients",
-                          value: "1,247",
-                          subtitle: "+12% from last week",
+                          value: totalPatients.toString(),
+                          subtitle: "",
                           icon: Icons.people,
                           color: Colors.blue,
                         ),
@@ -109,8 +129,8 @@ class DashboardScreen extends StatelessWidget {
                       Expanded(
                         child: _StatCard(
                           title: "Today's Appointments",
-                          value: "24",
-                          subtitle: "+3 from last week",
+                          value: todaysAppointments.toString(),
+                          subtitle: "",
                           icon: Icons.calendar_today,
                           color: Colors.green,
                         ),
@@ -118,17 +138,17 @@ class DashboardScreen extends StatelessWidget {
                       Expanded(
                         child: _StatCard(
                           title: "New Registrations",
-                          value: "8",
-                          subtitle: "+2 from last week",
+                          value: newRegistrations.toString(),
+                          subtitle: "",
                           icon: Icons.person_add,
                           color: Colors.orange,
                         ),
                       ),
                       Expanded(
                         child: _StatCard(
-                          title: "Pending Records",
-                          value: "5",
-                          subtitle: "-1 from last week",
+                          title: "appointment Requests",
+                          value: appointmentrequest.toString(),
+                          subtitle: "",
                           icon: Icons.pending_actions,
                           color: Colors.red,
                         ),
@@ -137,13 +157,13 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Appointments + Pending Tasks
+                  // appointment and tasks
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Expanded(child: _AppointmentsCard()),
-                      SizedBox(width: 16),
-                      Expanded(child: _TasksCard()),
+                    children: [
+                      Expanded(child: _AppointmentsCard(todaysAppointmentList)),
+                      const SizedBox(width: 16),
+                      const Expanded(child: _TasksCard()),
                     ],
                   ),
                 ],
@@ -156,20 +176,12 @@ class DashboardScreen extends StatelessWidget {
   }
 
   // Sidebar item with navigation
-  static Widget _buildSidebarItem(
-    BuildContext context,
-    IconData icon,
-    String label,
-    Widget page,
-  ) {
+  static Widget _buildSidebarItem(BuildContext context, IconData icon, String label, Widget page) {
     return ListTile(
       leading: Icon(icon, color: Colors.black87),
       title: Text(label),
       onTap: () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => page),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
       },
     );
   }
@@ -219,7 +231,9 @@ class _StatCard extends StatelessWidget {
 }
 
 class _AppointmentsCard extends StatelessWidget {
-  const _AppointmentsCard();
+  final List<Map<String, dynamic>> appointments;
+
+  const _AppointmentsCard(this.appointments);
 
   @override
   Widget build(BuildContext context) {
@@ -235,8 +249,13 @@ class _AppointmentsCard extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Divider(),
-            _appointmentItem("Emma Thompson", "Routine Checkup", "09:00 AM"),
-            _appointmentItem("Maria Garcia", "Ultrasound", "10:30 AM"),
+            ...appointments.map((appointment) {
+              final name = appointment['patient_name'] ?? 'No Name';
+              final type = appointment['type'] ?? 'General';
+              final timestamp = appointment['scheduled_datetime'] as Timestamp;
+              final time = DateFormat.jm().format(timestamp.toDate());
+              return _appointmentItem(name, type, time);
+            }).toList(),
           ],
         ),
       ),
@@ -283,12 +302,12 @@ class _TasksCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Pending Tasks",
+              "REMINDER",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Divider(),
-            _taskItem("Complete ANC registration for Emma Thompson", "2 hours ago", "High"),
-            _taskItem("Update patient records for Maria Garcia", "4 hours ago", "Medium"),
+            _taskItem("Remember to schedule  ANC sessions on TUESDAY and THURSDAY EVERYWEEK", "weekly", "High"),
+            _taskItem("Approve some special session requestn", "scheduled date", "Medium"),
           ],
         ),
       ),
