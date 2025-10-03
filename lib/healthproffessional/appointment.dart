@@ -382,9 +382,16 @@ class _AppointmentPageState extends State<AppointmentPage> {
 
   // Main Content 
   Widget _buildMainContent() {
-    switch (_selectedMenu) {
-      case MenuItem.home:
-        return Wrap(
+  switch (_selectedMenu) {
+    case MenuItem.home:
+      return Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/patientdatabackg.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Wrap(
           spacing: 16,
           runSpacing: 16,
           alignment: WrapAlignment.center,
@@ -402,7 +409,9 @@ class _AppointmentPageState extends State<AppointmentPage> {
               setState(() => _selectedMenu = MenuItem.deleteAppointments);
             }),
           ],
-        );
+        ),
+      );
+
 
       // ------------------- Schedule ANC Session ------------------- //
       case MenuItem.scheduleSession:

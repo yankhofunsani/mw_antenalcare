@@ -4,7 +4,6 @@ import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 
-//patient data display
 class PatientDataPage extends StatefulWidget {
   const PatientDataPage({super.key});
 
@@ -68,32 +67,48 @@ class _PatientDataPageState extends State<PatientDataPage> {
       return value.toString();
     }
   }
-
-  // Build table
-  Widget _buildTable(Map<String, dynamic>? data) {
-    if (data == null || data.isEmpty) {
-      return const Text("No data available");
+ // Flatten map helper
+Map<String, dynamic> _flattenMap(Map<String, dynamic> map, [String prefix = ""]) {
+  final result = <String, dynamic>{};
+  map.forEach((key, value) {
+    final newKey = prefix.isEmpty ? key : "$prefix.$key";
+    if (value is Map<String, dynamic>) {
+      result.addAll(_flattenMap(value, newKey));
+    } else {
+      result[newKey] = value;
     }
-    return Table(
-      border: TableBorder.all(color: Colors.grey.shade400, width: 0.5),
-      columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
-      children: data.entries.map((e) {
-        return TableRow(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(6),
-              child: Text(e.key,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(6),
-              child: Text(_formatValue(e.value)),
-            ),
-          ],
-        );
-      }).toList(),
-    );
+  });
+  return result;
+}
+
+// Build table
+Widget _buildTable(Map<String, dynamic>? data) {
+  if (data == null || data.isEmpty) {
+    return const Text("No data available");
   }
+
+  final flatData = _flattenMap(data);
+
+  return Table(
+    border: TableBorder.all(color: Colors.grey.shade400, width: 0.5),
+    columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
+    children: flatData.entries.map((e) {
+      return TableRow(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(6),
+            child: Text(e.key,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(6),
+            child: Text(_formatValue(e.value)),
+          ),
+        ],
+      );
+    }).toList(),
+  );
+}
 
   // PDF print
   Future<void> _printDocument(Map<String, dynamic>? data, String title) async {
@@ -164,9 +179,9 @@ class _PatientDataPageState extends State<PatientDataPage> {
       body: Stack(
         children: [
           Positioned.fill(
-              child: Image.asset("assets/images/patientdatabackg.jpg",
+              child: Image.asset("assets/images/patientdatabackg.png",
                   fit: BoxFit.cover)),
-          Container(color: Colors.black.withOpacity(0.2)),
+          Container(color: Colors.grey.withOpacity(0.2)),
           Padding(
             padding: const EdgeInsets.all(16),
             child: SingleChildScrollView(

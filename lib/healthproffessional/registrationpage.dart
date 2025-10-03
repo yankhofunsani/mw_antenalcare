@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -23,6 +25,28 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final usernameController = TextEditingController();
   final villageController = TextEditingController();
   final phoneController = TextEditingController();
+
+  Future<void> _sendEmail(String email, String username, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse("http://10.1.24.35:3000/send-credentials"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'username': username,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print("Email sent successfully");
+      } else {
+        print("Email failed: ${response.body}");
+      }
+    } catch (e) {
+      print("Email error: $e");
+    }
+  }
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -47,13 +71,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
         String uid = userCredential.user!.uid;
 
-            // reg no generation
+        // Registration number
         final patientSnap =
             await FirebaseFirestore.instance.collection('patients').get();
         int nextNumber = patientSnap.docs.length + 1;
-        String regNo = nextNumber.toString().padLeft(3, '0'); 
+        String regNo = nextNumber.toString().padLeft(3, '0');
 
-        // Savve user in users collectiom
+        // Save user in Firestore users collection
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'firstname': firstnameController.text.trim(),
           'surname': surnameController.text.trim(),
@@ -67,7 +91,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'createdAt': FieldValue.serverTimestamp(),
         });
 
-        // patient collection
+        // Save in patients collection
         if (roleController.text.trim().toLowerCase() == "patient") {
           await FirebaseFirestore.instance.collection('patients').doc(uid).set({
             'registration_number': regNo,
@@ -83,16 +107,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
           });
         }
 
-        // email sending 
+        // Send credentials email
         if (emailController.text.isNotEmpty) {
-          print("Send email to ${emailController.text} with username & password");
-        } else if (phoneController.text.isNotEmpty) {
-          print("Send SMS to ${phoneController.text} with username & password");
+          await _sendEmail(
+            emailController.text.trim(),
+            usernameController.text.trim(),
+            passwordController.text.trim(),
+          );
         }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Registration Successful - Reg No: $regNo')),
         );
-        
+
         Navigator.pushReplacementNamed(context, '/admindashboard');
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -159,7 +186,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ),
           ),
 
-          // CONTENT
+          // Content
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -170,7 +197,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       style:
                           TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
-
                   Card(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
@@ -194,8 +220,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                         child: Text(option),
                                       ))
                                   .toList(),
-                              onChanged: (value) =>
-                                  setState(() => sex = value),
+                              onChanged: (value) => setState(() => sex = value),
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12)),
@@ -204,7 +229,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               validator: (value) =>
                                   value == null ? 'Please select sex' : null,
                             ),
-                            const SizedBox(height: 8),
                             buildTextField("Email", emailController,
                                 keyboardType: TextInputType.emailAddress),
                             TextFormField(
@@ -215,12 +239,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                     borderRadius: BorderRadius.circular(12)),
                                 labelText: "Password",
                               ),
-                              validator: (value) => value == null ||
-                                      value.length < 6
+                              validator: (value) => value == null || value.length < 6
                                   ? 'Password must be at least 6 characters'
                                   : null,
                             ),
-                            const SizedBox(height: 8),
                             buildTextField("Username", usernameController),
                             buildTextField("Home Village", villageController),
                             buildTextField("Phone Number", phoneController,

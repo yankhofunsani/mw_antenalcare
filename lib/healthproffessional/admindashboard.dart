@@ -175,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Sidebar item with navigation
+  // Sidebar 
   static Widget _buildSidebarItem(BuildContext context, IconData icon, String label, Widget page) {
     return ListTile(
       leading: Icon(icon, color: Colors.black87),
