@@ -133,9 +133,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My profile'),
-        backgroundColor: Colors.grey.shade200,
-        leading: const Icon(Icons.person, color: Colors.black)
+        title: const Text('My profile',style: TextStyle(color: Colors.white),),
+        backgroundColor: Colors.pinkAccent,
+        leading: const Icon(Icons.person, color: Colors.white)
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

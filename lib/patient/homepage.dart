@@ -1,25 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/login.dart';
+import 'package:intl/intl.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _firestore = FirebaseFirestore.instance;
+  String? userEmail;
+  String? registrationNumber;
+
+  Map<String, dynamic>? latestSession;
+  List<Map<String, dynamic>> upcomingAppointments = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      userEmail = FirebaseAuth.instance.currentUser?.email;
+      if (userEmail == null) return;
+
+
+      final patientSnap = await _firestore
+          .collection('patients')
+          .where('email', isEqualTo: userEmail)
+          .limit(1)
+          .get();
+
+      if (patientSnap.docs.isEmpty) return;
+      registrationNumber = patientSnap.docs.first['registration_number'];
+
+      final sessionSnap = await _firestore
+          .collection('session_data')
+          .where('registration_number', isEqualTo: registrationNumber)
+          .orderBy('createdAt', descending: true)
+          .limit(1)
+          .get();
+
+        if (sessionSnap.docs.isNotEmpty) {
+        latestSession = sessionSnap.docs.first.data();
+      }
+
+      // upcoming session
+      final today = DateTime.now();
+      final ancSnap = await _firestore
+          .collection('ANC_session_register')
+          .where('registration_number', isEqualTo: registrationNumber)
+          .get();
+
+      upcomingAppointments = ancSnap.docs
+          .where((doc) {
+            final data = doc.data();
+            final sessionDate = (data['session_date'] as Timestamp).toDate();
+            return sessionDate.isAfter(today) || _isSameDay(sessionDate, today);
+          })
+          .map((doc) => doc.data())
+          .toList();
+
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading data: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  @override
   Widget build(BuildContext context) {
-  String? userEmail = FirebaseAuth.instance.currentUser?.email;
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final visit = latestSession?['visit'] ?? {};
+    final gestAgeRaw = visit['gest_age'];
+    final gestAge = gestAgeRaw is num
+      ? gestAgeRaw
+      : num.tryParse(gestAgeRaw.toString()) ?? 0;
+    final remainingWeeks = 40 - gestAge;
+    final babyPresentation = visit['position_presentation'] ?? 'Unknown';
+    final bp = visit['bp'] ?? 'N/A';
+    final weight = visit['weight'] ?? 'N/A';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome $userEmail' ,style: TextStyle(color:Colors.white)),
+        title: const Text('Welcome Mother to be', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.pinkAccent,
         actions: [
-          IconButton(               
-            icon: Icon(Icons.logout),
+          IconButton(
+            icon: const Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => LoginPage()),
+                MaterialPageRoute(builder: (_) => const LoginPage()),
               );
             },
           ),
@@ -27,109 +119,119 @@ class HomePage extends StatelessWidget {
       ),
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.all(16),
-          children: [
-            // Header
-            Row(
-              children: const [
-                CircleAvatar(child: Icon(Icons.local_hospital)),
-                SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("MALAWI", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text("Antenatal Care", style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Progress Bar Card
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [Colors.pinkAccent, Colors.purple]),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Week 24 of 40", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text("Your baby is about the size of a corn", style: TextStyle(color: Colors.white70)),
-                  SizedBox(height: 12),
-                  Stack(
+        child: RefreshIndicator(
+          onRefresh: _loadUserData,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Row(
+                children: const [
+                  CircleAvatar(child: Icon(Icons.local_hospital)),
+                  SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(height: 10, width: double.infinity, color: Colors.black),
-                      FractionallySizedBox(
-                        widthFactor: 24 / 40,
-                        child: Container(height: 10, color: Colors.pink),
-                      ),
+                      Text("MALAWI", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text("Antenatal Care", style: TextStyle(color: Colors.grey)),
                     ],
                   ),
-                  SizedBox(height: 6),
-                  Text("16 weeks remaining", style: TextStyle(color: Colors.white)),
                 ],
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Vitals
-            Row(
-              children: [
-                Expanded(
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: const [
-                          Icon(Icons.favorite, color: Colors.red),
-                          SizedBox(height: 8),
-                          Text("72", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                          Text("BPM"),
-                        ],
-                      ),
-                    ),
-                  ),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Colors.pinkAccent, Colors.purple]),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                Expanded(
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: const [
-                          Icon(Icons.monitor_heart, color: Colors.blue),
-                          SizedBox(height: 8),
-                          Text("120/80", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                          Text("Blood Pressure"),
-                        ],
-                      ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Week $gestAge of 40",
+                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text("Your baby’s presentation: $babyPresentation",
+                        style: const TextStyle(color: Colors.white70)),
+                    const SizedBox(height: 12),
+                    Stack(
+                      children: [
+                        Container(height: 10, width: double.infinity, color: Colors.black),
+                        FractionallySizedBox(
+                          widthFactor: gestAge / 40,
+                          child: Container(height: 10, color: Colors.pink),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Appointments
-            const Text("Upcoming Appointments", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Card(
-              child: ListTile(
-                title: const Text("Dr. Sarah Johnson"),
-                subtitle: const Text("Routine Checkup"),
-                trailing: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text("Mar 15"),
-                    Text("10:00 AM"),
+                    const SizedBox(height: 6),
+                    Text("$remainingWeeks weeks remaining",
+                        style: const TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.monitor_weight, color: Colors.purpleAccent),
+                            const SizedBox(height: 8),
+                            Text("$weight", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                            const Text("Weight (kg)"),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.favorite, color: Colors.red),
+                            const SizedBox(height: 8),
+                            Text("$bp", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                            const Text("Blood Pressure"),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              const Text("Upcoming Appointments",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              ...upcomingAppointments.map((appt) {
+                final doctor = appt['doctor_name'] ?? ' Midwife';
+                final sessionType = appt['session_type'] ?? 'Antenatal care routine session';
+                final sessionDate = (appt['session_date'] as Timestamp).toDate();
+                final formattedDate = DateFormat('MMM dd, yyyy').format(sessionDate);
+                final formattedTime = DateFormat('hh:mm a').format(sessionDate);
+                return Card(
+                  child: ListTile(
+                    title: Text(doctor),
+                    subtitle: Text(sessionType),
+                    trailing: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(formattedDate),
+                        Text(formattedTime),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
         ),
       ),
     );

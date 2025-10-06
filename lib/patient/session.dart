@@ -289,9 +289,11 @@ class _SessionsPageState extends State<SessionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Sessions & Appointments"),
-        backgroundColor: Colors.grey.shade100,
-        leading: const Icon(Icons.calendar_month, color: Colors.black),
+        title:  Text("Sessions & Appointments",style: TextStyle(color: Colors.white),
+        
+      ),
+      backgroundColor: Colors.pinkAccent,
+      leading: const Icon(Icons.calendar_month, color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -299,7 +301,6 @@ class _SessionsPageState extends State<SessionsPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Appointment Requests Section
                   _buildSection(
                     "Appointment Requests",
                     appointmentRequests,
@@ -309,13 +310,12 @@ class _SessionsPageState extends State<SessionsPage> {
                             "${item['preferred_date']} - ${item['reason']}"),
                         trailing: Text(item['status'],
                             style: const TextStyle(
-                                color: Color.fromRGBO(241, 223, 60, 1),
+                                color: Colors.purpleAccent,
                                 fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ),
 
-                  // Scheduled Appointments Section
                   _buildSection(
                     "Scheduled Appointments",
                     scheduledAppointments,
@@ -332,7 +332,6 @@ class _SessionsPageState extends State<SessionsPage> {
                     ),
                   ),
 
-                  // Denied Appointments Section
                   _buildSection(
                     "Denied Appointments",
                     deniedAppointments,

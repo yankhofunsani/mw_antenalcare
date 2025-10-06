@@ -92,10 +92,10 @@ class _TrackerState extends State<Tracker> {
       appBar: AppBar(
         title:  Text(
              "My pregnancy Tracker",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor:Colors.grey.shade100,
-        leading: const Icon(Icons.pregnant_woman_rounded, color: Colors.black)
+        backgroundColor:Colors.pinkAccent,
+        leading: const Icon(Icons.pregnant_woman_rounded, color: Colors.white)
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())

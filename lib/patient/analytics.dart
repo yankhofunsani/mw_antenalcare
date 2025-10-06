@@ -93,8 +93,8 @@ class _AnalyticsState extends State<Analytics> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("My pregnancy trends "), backgroundColor: Colors.grey.shade100,
-          leading: const Icon(Icons.analytics, color: Colors.black),
+          title: const Text("My pregnancy trends ",style: TextStyle(color: Colors.white),), backgroundColor: Colors.pinkAccent,
+          leading: const Icon(Icons.analytics, color: Colors.white),
              ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

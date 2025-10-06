@@ -255,7 +255,7 @@ class _AppointmentsCard extends StatelessWidget {
               final timestamp = appointment['scheduled_datetime'] as Timestamp;
               final time = DateFormat.jm().format(timestamp.toDate());
               return _appointmentItem(name, type, time);
-            }).toList(),
+            }),
           ],
         ),
       ),
