@@ -11,6 +11,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+
 class _HomePageState extends State<HomePage> {
   final _firestore = FirebaseFirestore.instance;
   String? userEmail;
@@ -229,7 +230,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),

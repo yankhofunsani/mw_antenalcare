@@ -16,7 +16,6 @@ import  'healthproffessional/doctorhome.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  //  Initialize Firebase for web & mobile
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -35,7 +34,7 @@ class AdminApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.purple,
       ),
-      home: const LoginPage(), // first page for admin web
+      home: const LoginPage(), 
       routes: {
       '/register': (context) => RegistrationPage(),
       '/login': (context) => LoginPage(),
