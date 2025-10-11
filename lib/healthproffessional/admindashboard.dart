@@ -28,10 +28,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadDashboardData();
   }
-
+  
   Future<void> _loadDashboardData() async {
     final today = DateTime.now();
-    final todayStr = DateFormat('yyyy-MM-dd').format(today);
+    final strtoday = DateFormat('yyyy-MM-dd').format(today);
 
     // Total patients
     final patientSnapshot = await FirebaseFirestore.instance.collection('patients').get();

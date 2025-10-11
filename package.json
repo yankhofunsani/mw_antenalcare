@@ -1,0 +1,17 @@
+{
+  "name": "mw_antenatalcare",
+  "version": "1.0.0",
+  "description": "<<<<<<< HEAD\r # mw_antenatalcare",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "flutter build web --release -t lib/main_admin.dart && firebase deploy --only hosting"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
